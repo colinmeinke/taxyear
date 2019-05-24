@@ -31,12 +31,16 @@
   let allowableExpenses = 0
   let includeToday = true
   let showProjection = true
+  let overrideDaysPassed = false
+  let overrideDaysPassedValue = null
 
   $: weeksInTaxYear = daysInTaxYear / 7
 
-  $: daysPassed = Math[includeToday ? 'ceil' : 'floor'](
-    (Date.now() - new Date(taxYearStartDate)) / 1000 / 60 / 60 / 24
-  )
+  $: daysPassed = showProjection && overrideDaysPassed && overrideDaysPassedValue !== null
+    ? overrideDaysPassedValue
+    : Math[includeToday ? 'ceil' : 'floor'](
+      (Date.now() - new Date(taxYearStartDate)) / 1000 / 60 / 60 / 24
+    )
 
   $: weeksPassed = daysPassed / 7
 
@@ -136,93 +140,92 @@
 <hr />
 
 <form>
-  <p>Days passed: {daysPassed}</p>
-  <p>Weeks passed: {Math.floor(weeksPassed)}</p>
-  <p>Percentage tax year complete: {Math.round(percentageComplete)}%</p>
-
-  <div>
-    <input
-      type="checkbox"
-      checked={includeToday}
-      on:click={() => includeToday = !includeToday}
-    />
-
-    <label>Include today?</label>
-  </div>
-
-  <hr />
-
-  <div>
-    <label>Days worked</label>
-
-    <input
-      type="number"
-      value={daysWorked}
-      on:input={(e) => daysWorked = Math.min(daysPassed, e.target.value)}
-    />
-  </div>
-
-  <p>Percentage days worked: {Math.round(percentageWorked)}%</p>
-
-  {#if percentageWorked > percentageRemaining}
-    <p>
-      <strong>Warning:</strong> Projected to pass the VAT threshold of
-      {currency.format(vatThreshold)}. You can work another
-      {Math.floor(remainingDays)} days ({Math.floor(percentageRemaining)}% of
-      the remaining days. {remainingDaysPerWeek.toFixed(2)} days per week) to
-      stay within the VAT threshold.
-    </p>
-  {:else}
-    <p>
-      To stay within the VAT threshold you can work another
-      {Math.floor(remainingDays)} days ({Math.floor(percentageRemaining)}% of
-      the remaining days. {remainingDaysPerWeek.toFixed(2)} days per week).
-    </p>
-  {/if}
-
-  <div>
-    <label>Day rate £</label>
-
-    <input
-      type="number"
-      value={dayRate}
-      step="50"
-      on:input={(e) => dayRate = e.target.value}
-    />
-  </div>
-
-  <div>
-    <label>Allowable expenses £</label>
-
-    <input
-      type="number"
-      value={allowableExpenses}
-      on:input={(e) => allowableExpenses = e.target.value}
-    />
-  </div>
-
-  <hr />
-
   <div>
     <p>Show:</p>
 
     <input
       type="radio"
-      name="showProjection"
-      checked={!showProjection}
-      on:click={() => showProjection = false}
+      bind:group={showProjection}
+      value={false}
     />
 
     <label>Current</label>
 
     <input
       type="radio"
-      name="showProjection"
-      checked={showProjection}
-      on:click={() => showProjection = true}
+      bind:group={showProjection}
+      value={true}
     />
 
     <label>Projection</label>
+  </div>
+
+  <hr />
+
+  <p>
+    Days passed:
+    {#if showProjection && overrideDaysPassed}
+      <input
+        type="number"
+        value={overrideDaysPassedValue !== null ? overrideDaysPassedValue : daysPassed}
+        on:input={(e) => overrideDaysPassedValue = e.target.value}
+        min="0"
+      />
+    {:else}
+      {daysPassed}
+    {/if}
+  </p>
+
+  <p>Weeks passed: {Math.floor(weeksPassed)}</p>
+  <p>Percentage tax year complete: {Math.round(percentageComplete)}%</p>
+
+  <div>
+    <input type="checkbox" bind:checked={includeToday} />
+    <label>Include today?</label>
+  </div>
+
+  {#if showProjection}
+    <div>
+      <input type="checkbox" bind:checked={overrideDaysPassed} />
+      <label>Override days passed?</label>
+    </div>
+  {/if}
+
+  <hr />
+
+  <div>
+    <label>Days worked</label>
+    <input type="number" bind:value={daysWorked} min="0" />
+  </div>
+
+  <p>Percentage days worked: {Math.round(percentageWorked)}%</p>
+
+  {#if dayRate}
+    {#if percentageWorked > percentageRemaining}
+      <p>
+        <strong>Warning:</strong> Projected to pass the VAT threshold of
+        {currency.format(vatThreshold)}. You can work another
+        {Math.floor(remainingDays)} days ({Math.floor(percentageRemaining)}% of
+        the remaining days. {remainingDaysPerWeek.toFixed(2)} days per week) to
+        stay within the VAT threshold.
+      </p>
+    {:else}
+      <p>
+        To stay within the VAT threshold you can work another
+        {Math.floor(remainingDays)} days ({Math.floor(percentageRemaining)}% of
+        the remaining days. {remainingDaysPerWeek.toFixed(2)} days per week).
+      </p>
+    {/if}
+  {/if}
+
+  <div>
+    <label>Day rate £</label>
+    <input type="number" bind:value={dayRate} step="50" min="0" />
+  </div>
+
+  <div>
+    <label>Allowable expenses £</label>
+    <input type="number" bind:value={allowableExpenses} min="0" />
   </div>
 </form>
 
