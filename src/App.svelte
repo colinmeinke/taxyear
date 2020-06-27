@@ -68,7 +68,7 @@
   let selectedTaxYear = taxYears.length - 1
   let daysWorked = 0
   let dayRate = 0
-  let allowableExpenses = 0
+  let allowableExpensesToDate = 0
   let includeToday = true
   let showProjection = false
   let overrideDaysPassed = false
@@ -95,16 +95,15 @@
   $: remainingDaysPerWeek = Math.min(7, remainingDays / ((taxYear.daysInTaxYear - daysWorked) / 7))
   $: percentageRemaining = remainingDays / (taxYear.daysInTaxYear - daysPassed) * 100
 
-  $: projectedAllowableExpenses = allowableExpenses * 100 / percentageComplete
+  $: allowableExpenses = showProjection
+    ? allowableExpensesToDate * (100 / percentageComplete)
+    : allowableExpensesToDate
 
   $: totalIncome = Math.floor(showProjection
     ? (taxYear.daysInTaxYear * (percentageWorked / 100)) * dayRate
     : daysWorked * dayRate)
 
-  $: netProfit = Math.max(
-    0,
-    totalIncome - Math.ceil(showProjection ? projectedAllowableExpenses : allowableExpenses)
-  )
+  $: netProfit = Math.max(0, totalIncome - Math.ceil(allowableExpenses))
 
   $: taxableIncome = Math.max(0, netProfit - taxYear.personalAllowance)
 
@@ -288,7 +287,7 @@
 
     <div>
       <label>Allowable expenses £</label>
-      <input type="number" bind:value={allowableExpenses} min="0" />
+      <input type="number" bind:value={allowableExpensesToDate} min="0" />
     </div>
   </form>
 
