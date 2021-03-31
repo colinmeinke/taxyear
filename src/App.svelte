@@ -63,6 +63,27 @@
       nic4Band3Threshold: 50000,
       vatThreshold: 85000,
     },
+    {
+      taxYearStartDate: 'April 6 2021',
+      taxYearEndDate: 'April 5 2022',
+      taxYearEnded: Date.now() > new Date('April 5 2022'),
+      daysInTaxYear: 365,
+      personalAllowance: 12570,
+      incomeTaxBand1Rate: 20,
+      incomeTaxBand2Rate: 40,
+      incomeTaxBand3Rate: 45,
+      incomeTaxBand1Threshold: 0,
+      incomeTaxBand2Threshold: 50270,
+      incomeTaxBand3Threshold: 150000,
+      nic2WeeklyRate: 3.05,
+      nic4Band1Rate: 0,
+      nic4Band2Rate: 9,
+      nic4Band3Rate: 2,
+      nic4Band1Threshold: 0,
+      nic4Band2Threshold: 9568,
+      nic4Band3Threshold: 50270,
+      vatThreshold: 85000,
+    },
   ]
 
   let selectedTaxYear = taxYears.length - 1
